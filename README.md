@@ -1,4 +1,4 @@
-<p align="left"><a href="https://laravel.com" target="_blank"><img src="https://magangphr.pcr.ac.id/assets/media/logos/logo-color.png" width="200" alt="Logo"></a></p>
+<p align="left"><a href="https://laravel.com" target="_blank"><img src="https://storage.googleapis.com/masterdatakbumn/logo/logohires/LOGO_PBKI_16-01-2023%2012:44:35.png" width="200" alt="Logo"></a></p>
 
 # Jangan Lupa :
 1. Upload .env dari local ke Server
