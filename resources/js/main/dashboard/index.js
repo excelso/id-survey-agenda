@@ -53,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function () {
         contentHeight: window.innerHeight - 340,
         nowIndicator: true,
         eventDidMount: function (info) {
-            const {detail} = info.event.extendedProps
+            const {detail, lokasi, notes, sambutan, protokoler, user} = info.event.extendedProps
+            const {name} = user
             info.el.childNodes.forEach((elm) => {
                 elm.childNodes.forEach((elmChilds) => {
                     if (typeof elmChilds.querySelector !== 'undefined') {
@@ -68,8 +69,77 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 })
 
+                let detailInfo = `<div class="truncate mb-2 text-[14px]">${detail}</div>`
+                let lokasiInfo = ``
+                let sambuatanInfo = ``
+                let protokolerInfo = ``
+                let notesInfo = ``
+                let userCreateInfo = ``
+                if (info.view.type === 'listWeek') {
+                    lokasiInfo = `
+                        <div class="truncate mb-2 text-[14px]">
+                            <div>
+                                <div class="font-bold">Lokasi / Venue</div>
+                                <div>
+                                    <i class="fa fa-location-dot mr-1"></i> ${lokasi}
+                                </div>
+                            </div>
+                        </div>
+                    `
+
+                    if (sambutan !== null && sambutan !== '') {
+                        sambuatanInfo = `
+                            <div class="truncate mb-2 text-[14px]">
+                                <div>
+                                    <div class="font-bold">Sambutan</div>
+                                    <div>
+                                        <i class="far fa-note-sticky mr-1"></i> ${sambutan}
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    }
+
+                    if (protokoler !== null && protokoler !== '') {
+                        protokolerInfo = `
+                            <div class="truncate mb-2 text-[14px]">
+                                <div>
+                                    <div class="font-bold">Protokoler</div>
+                                    <div>
+                                        <i class="far fa-user mr-1"></i> ${protokoler}
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    }
+
+                    if (notes !== null && notes !== '') {
+                        notesInfo = `
+                            <div class="truncate mb-2 text-[14px]">
+                                <div>
+                                    <div class="font-bold">Notes</div>
+                                    <div>
+                                        <i class="far fa-note-sticky mr-1"></i> ${notes}
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    }
+
+                    userCreateInfo = `
+                        <div class="truncate mt-5 text-[12px] italic">
+                            by ${name}
+                        </div>
+                    `
+                }
+
                 $(elm.childNodes).append(`
-                    <div class="truncate">${detail}</div>
+                    ${detailInfo}
+                    ${lokasiInfo}
+                    ${sambuatanInfo}
+                    ${protokolerInfo}
+                    ${notesInfo}
+                    ${userCreateInfo}
                 `)
             })
 

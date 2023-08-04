@@ -42,12 +42,12 @@
                     <div class="title">
                         <ul class="flex flex-wrap font-bold text-center rounded-lg p-1 text-[12px] bg-gray-100 border-[1px] border-gray-200" role="exTabs" data-tabs-toggle="#calendarTabs">
                             <li class="mr-2 grow-[1]">
-                                <a class="inline-block px-4 py-2 rounded-lg cursor-pointer w-full" data-tabs-target="#dTab">
-                                    Harian
+                                <a class="inline-block px-4 py-2 rounded-lg cursor-pointer w-full text-white bg-blue-600" data-tabs-target="#dTab">
+                                    Daftar
                                 </a>
                             </li>
                             <li class="mx-1 grow-[1]">
-                                <a class="inline-block px-4 py-2 rounded-lg cursor-pointer w-full text-white bg-blue-600" data-tabs-target="#wTab">
+                                <a class="inline-block px-4 py-2 rounded-lg cursor-pointer w-full" data-tabs-target="#wTab">
                                     Mingguan
                                 </a>
                             </li>

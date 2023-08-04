@@ -51,16 +51,6 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Lokasi</label>
-                <label class="form-group-control">
-                    <input type="text" class="form-control lokasiJadwal" placeholder="..."/>
-                </label>
-                <div class="info-alert-text error lokasiJadwalError hidden">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div class="lokasiJadwalErrorText"></div>
-                </div>
-            </div>
-            <div class="form-group">
                 <label>Detail Jadwal</label>
                 <label class="form-group-control">
                     <textarea class="form-control detailJadwal" rows="3" placeholder="..."></textarea>
@@ -78,6 +68,36 @@
                 <div class="info-alert-text error notesJadwalError hidden">
                     <i class="fas fa-exclamation-circle"></i>
                     <div class="notesJadwalErrorText"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Lokasi / Venue</label>
+                <label class="form-group-control">
+                    <input type="text" class="form-control lokasiJadwal" placeholder="..."/>
+                </label>
+                <div class="info-alert-text error lokasiJadwalError hidden">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="lokasiJadwalErrorText"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Sambutan</label>
+                <label class="form-group-control">
+                    <input type="text" class="form-control sambutanJadwal" placeholder="..."/>
+                </label>
+                <div class="info-alert-text error sambutanJadwalError hidden">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="sambutanJadwalErrorText"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Protokoler</label>
+                <label class="form-group-control">
+                    <input type="text" class="form-control protokolerJadwal" placeholder="..."/>
+                </label>
+                <div class="info-alert-text error protokolerJadwalError hidden">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="protokolerJadwalErrorText"></div>
                 </div>
             </div>
             <div class="form-group">

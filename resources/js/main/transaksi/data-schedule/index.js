@@ -8,6 +8,8 @@ import localization from 'moment/dist/locale/id'
 import {closeModalDialog, showModalDialog} from "@/js/plugins/modal";
 import {closeAlert, confirmAlert, failureAlert, successAlert, waitLoader} from "@/js/plugins/sweet-alert"
 import {getMetaContent, handlePriorityColor, hiddenElm} from "@/js/plugins/functions"
+import {setTriggerSelected} from "@/js/plugins/select2-custom";
+
 moment.updateLocale('id', localization)
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -32,8 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const detailJadwalError = document.querySelector('.detailJadwalError')
     const detailJadwalErrorText = document.querySelector('.detailJadwalErrorText')
     const notesJadwal = document.querySelector('.notesJadwal')
-    const notesJadwalError = document.querySelector('.notesJadwalError')
-    const notesJadwalErrorText = document.querySelector('.notesJadwalErrorText')
+    const sambutanJadwal = document.querySelector('.sambutanJadwal')
+    const protokolerJadwal = document.querySelector('.protokolerJadwal')
     const prioritasJadwal = document.querySelector('.prioritasJadwal')
     const prioritasJadwalError = document.querySelector('.prioritasJadwalError')
     const prioritasJadwalErrorText = document.querySelector('.prioritasJadwalErrorText')
@@ -61,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
         headerToolbar: false,
         selectable: true,
         initialView: 'timeGridWeek',
-        dateClick: function(info) {
+        dateClick: function (info) {
 
         },
         views: {
@@ -87,25 +89,103 @@ document.addEventListener('DOMContentLoaded', function () {
             minute: '2-digit',
             hour12: false
         },
-        eventClick: function (info) {
-            console.log(info.event.extendedProps)
-        },
+        eventClick: handleUpdate,
         contentHeight: window.innerHeight - 340,
         nowIndicator: true,
         eventDidMount: function (info) {
-            const {detail} = info.event.extendedProps
+            const {detail, lokasi, notes, sambutan, protokoler, user} = info.event.extendedProps
+            const {name} = user
             info.el.childNodes.forEach((elm) => {
                 elm.childNodes.forEach((elmChilds) => {
                     if (typeof elmChilds.querySelector !== 'undefined') {
                         const fcEventTitleContainer = elmChilds.querySelector('.fc-event-title-container')
                         const fcEventTitle = elmChilds.querySelector('.fc-event-title')
-                        fcEventTitleContainer.classList.add('!grow-[0]')
-                        fcEventTitle.classList.add('truncate')
+                        if (fcEventTitleContainer) {
+                            fcEventTitleContainer.classList.add('!grow-[0]')
+                        }
+                        if (fcEventTitle) {
+                            fcEventTitle.classList.add('truncate')
+                        }
                     }
                 })
+
+                let detailInfo = `<div class="truncate mb-2 text-[14px]">${detail}</div>`
+                let lokasiInfo = ``
+                let sambuatanInfo = ``
+                let protokolerInfo = ``
+                let notesInfo = ``
+                let userCreateInfo = ``
+                if (info.view.type === 'listWeek') {
+                    lokasiInfo = `
+                        <div class="truncate mb-2 text-[14px]">
+                            <div>
+                                <div class="font-bold">Lokasi / Venue</div>
+                                <div>
+                                    <i class="fa fa-location-dot mr-1"></i> ${lokasi}
+                                </div>
+                            </div>
+                        </div>
+                    `
+
+                    if (sambutan !== null && sambutan !== '') {
+                        sambuatanInfo = `
+                            <div class="truncate mb-2 text-[14px]">
+                                <div>
+                                    <div class="font-bold">Sambutan</div>
+                                    <div>
+                                        <i class="far fa-note-sticky mr-1"></i> ${sambutan}
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    }
+
+                    if (protokoler !== null && protokoler !== '') {
+                        protokolerInfo = `
+                            <div class="truncate mb-2 text-[14px]">
+                                <div>
+                                    <div class="font-bold">Protokoler</div>
+                                    <div>
+                                        <i class="far fa-user mr-1"></i> ${protokoler}
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    }
+
+                    if (notes !== null && notes !== '') {
+                        notesInfo = `
+                            <div class="truncate mb-2 text-[14px]">
+                                <div>
+                                    <div class="font-bold">Notes</div>
+                                    <div>
+                                        <i class="far fa-note-sticky mr-1"></i> ${notes}
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    }
+
+                    userCreateInfo = `
+                        <div class="truncate mt-5 text-[12px] italic">
+                            by ${name}
+                        </div>
+                    `
+                }
+
                 $(elm.childNodes).append(`
-                    <div class="truncate">${detail}</div>
+                    ${detailInfo}
+                    ${lokasiInfo}
+                    ${sambuatanInfo}
+                    ${protokolerInfo}
+                    ${notesInfo}
+                    ${userCreateInfo}
                 `)
+            })
+
+            const fcListEventGraphic = info.el.querySelectorAll('.fc-list-event-graphic')
+            fcListEventGraphic.forEach((elm) => {
+                elm.classList.add('!pt-[15px]')
             })
         },
         // now: '2023-07-27T22:00:00'
@@ -150,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `)
     }
 
-    renderCalendarView('timeGridWeek')
+    renderCalendarView('listWeek')
     const roleExTabs = document.querySelector('[role="exTabs"]')
     const roleExTabsChilds = roleExTabs.querySelectorAll('li a')
     roleExTabsChilds.forEach((elm) => {
@@ -160,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $(elm).addClass('text-white bg-blue-600')
 
             if (dataTarget === '#dTab') {
-                renderCalendarView('timeGridDay')
+                renderCalendarView('listWeek')
             }
 
             if (dataTarget === '#mTab') {
@@ -225,7 +305,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         hiddenElm(tanggalUntilError)
                         hiddenElm(lokasiJadwalError)
                         hiddenElm(detailJadwalError)
-                        hiddenElm(notesJadwalError)
                         hiddenElm(prioritasJadwalError)
 
                         await waitLoader('Mohon Tunggu...', 'Menyimpan data Agenda', async () => {
@@ -242,27 +321,39 @@ document.addEventListener('DOMContentLoaded', function () {
                                     detail: detailJadwal.value,
                                     lokasi: lokasiJadwal.value,
                                     notes: notesJadwal.value,
+                                    sambutan: sambutanJadwal.value,
+                                    protokoler: protokolerJadwal.value,
                                     prioritas: prioritasJadwal.value,
                                 })
                             })
 
                             const {status} = response
-                            const {message, errorValidation} = await response.json()
+                            const {message, jadwal_id, user, errorValidation} = await response.json()
                             if (status === 200) {
                                 successAlert({
                                     title: 'Berhasil',
                                     html: message,
                                     confirmButtonText: 'Tutup'
                                 }, () => {
-                                    closeAlert()
-                                    calendar.addEvent({
-                                        title: judulJadwal.value,
-                                        start: moment(tanggalStart.value).format('YYYY-MM-DDTHH:mm:ss'),
-                                        end: moment(tanggalUntil.value).format('YYYY-MM-DDTHH:mm:ss'),
-                                        color: handlePriorityColor(prioritasJadwal.value),
-                                        extendedProps: {
-                                            detail: detailJadwal.value
-                                        }
+                                    closeModalDialog(modalForm, () => {
+                                        calendar.addEvent({
+                                            id: jadwal_id,
+                                            title: judulJadwal.value,
+                                            start: moment(tanggalStart.value).format('YYYY-MM-DDTHH:mm:ss'),
+                                            end: moment(tanggalUntil.value).format('YYYY-MM-DDTHH:mm:ss'),
+                                            color: handlePriorityColor(prioritasJadwal.value),
+                                            extendedProps: {
+                                                id: jadwal_id,
+                                                judul: judulJadwal.value,
+                                                tanggal_start: tanggalStart.value,
+                                                tanggal_until: tanggalUntil.value,
+                                                detail: detailJadwal.value,
+                                                lokasi: lokasiJadwal.value,
+                                                notes: notesJadwal.value,
+                                                prioritas: prioritasJadwal.value,
+                                                user: user
+                                            }
+                                        })
                                     })
                                 })
                             } else {
@@ -281,6 +372,119 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         })
     }
+
     //endregion
+
+    function handleUpdate(info) {
+        showModalDialog(modalForm, '<i class="fas fa-edit mr-2"></i> Edit Agenda', () => {
+            const {
+                id,
+                judul,
+                tanggal_start,
+                tanggal_until,
+                lokasi,
+                detail,
+                notes,
+                sambutan,
+                protokoler,
+                prioritas
+            } = info.event.extendedProps
+
+            jadwalId.value = id
+            judulJadwal.value = judul
+            tanggalStart.value = tanggal_start
+            tanggalUntil.value = tanggal_until
+            lokasiJadwal.value = lokasi
+            detailJadwal.value = detail
+            notesJadwal.value = notes
+            sambutanJadwal.value = sambutan
+            protokolerJadwal.value = protokoler
+            setTriggerSelected(prioritasJadwal, prioritas)
+
+            btnSimpan.addEventListener('click', function () {
+                confirmAlert({
+                    title: 'Konfirmasi',
+                    html: 'Apakah akan mengubah Agenda ini?',
+                    confirmButtonText: 'Ya, Simpan',
+                    showDenyButton: true,
+                    denyButtonText: 'Tidak'
+                }, async () => {
+                    hiddenElm(judulJadwalError)
+                    hiddenElm(tanggalStartError)
+                    hiddenElm(tanggalUntilError)
+                    hiddenElm(lokasiJadwalError)
+                    hiddenElm(detailJadwalError)
+                    hiddenElm(prioritasJadwalError)
+
+                    await waitLoader('Mohon Tunggu...', 'Menyimpan data Agenda', async () => {
+                        const response = await fetch(`/trans/schedule/update`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({
+                                id: jadwalId.value,
+                                judul: judulJadwal.value,
+                                tanggal_start: tanggalStart.value,
+                                tanggal_until: tanggalUntil.value,
+                                detail: detailJadwal.value,
+                                lokasi: lokasiJadwal.value,
+                                notes: notesJadwal.value,
+                                sambutan: sambutanJadwal.value,
+                                protokoler: protokolerJadwal.value,
+                                prioritas: prioritasJadwal.value,
+                            })
+                        })
+
+                        const {status} = response
+                        const {message, data, user, errorValidation} = await response.json()
+                        if (status === 200) {
+                            successAlert({
+                                title: 'Berhasil',
+                                html: message,
+                                confirmButtonText: 'Tutup'
+                            }, () => {
+                                closeModalDialog(modalForm, () => {
+                                    const event = calendar.getEventById(jadwalId.value)
+                                    event.remove()
+
+                                    calendar.addEvent({
+                                        id: jadwalId.value,
+                                        title: judulJadwal.value,
+                                        start: moment(tanggalStart.value).format('YYYY-MM-DDTHH:mm:ss'),
+                                        end: moment(tanggalUntil.value).format('YYYY-MM-DDTHH:mm:ss'),
+                                        color: handlePriorityColor(prioritasJadwal.value),
+                                        extendedProps: {
+                                            id: jadwalId.value,
+                                            judul: judulJadwal.value,
+                                            tanggal_start: tanggalStart.value,
+                                            tanggal_until: tanggalUntil.value,
+                                            detail: detailJadwal.value,
+                                            lokasi: lokasiJadwal.value,
+                                            notes: notesJadwal.value,
+                                            sambutan: sambutanJadwal.value,
+                                            protokoler: protokolerJadwal.value,
+                                            prioritas: prioritasJadwal.value,
+                                            user: user
+                                        }
+                                    })
+                                })
+                            })
+                        } else {
+                            if (errorValidation) {
+                                closeAlert()
+                            } else {
+                                failureAlert({
+                                    html: message,
+                                    confirmButtonText: 'Tutup'
+                                })
+                            }
+                        }
+                    })
+                })
+            })
+        })
+    }
 
 })
