@@ -463,3 +463,16 @@ export const handleDropdown = () => {
         new Dropdown(targetElm, elm, options)
     })
 }
+
+export const handlePriorityColor = (priority) => {
+    let color
+    if (priority === 'Medium') {
+        color = '#E8B613';
+    } else if (priority === 'High') {
+        color = '#FF0000';
+    } else {
+        color = '#518105'
+    }
+
+    return color
+}

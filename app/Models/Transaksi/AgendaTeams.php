@@ -10,10 +10,10 @@
      * @method static where(string $string, string $id)
      * @method static get()
      */
-    class JadwalTeams extends Model {
+    class AgendaTeams extends Model {
         use HasFactory;
 
         protected $guarded = [];
-        protected $table = 't_jadwal_teams';
+        protected $table = 't_agenda_teams';
 
     }

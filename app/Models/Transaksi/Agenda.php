@@ -10,15 +10,15 @@
      * @method static create(array $all)
      * @method static where(string $string, string $id)
      * @method static get()
-     * @method static dataJadwal()
+     * @method static dataAgenda()
      */
-    class Jadwal extends Model {
+    class Agenda extends Model {
         use HasFactory;
 
         protected $guarded = [];
-        protected $table = 't_jadwal';
+        protected $table = 't_agenda';
 
-        public function scopeDataJadwal(Builder $builder): void {
+        public function scopeDataAgenda(Builder $builder): void {
             $builder->select('*');
         }
 

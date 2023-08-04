@@ -6,14 +6,40 @@ import interactionPlugin from '@fullcalendar/interaction'
 import moment from "moment";
 import localization from 'moment/dist/locale/id'
 import {closeModalDialog, showModalDialog} from "@/js/plugins/modal";
+import {closeAlert, confirmAlert, failureAlert, successAlert, waitLoader} from "@/js/plugins/sweet-alert"
+import {getMetaContent, handlePriorityColor, hiddenElm} from "@/js/plugins/functions"
 moment.updateLocale('id', localization)
 
 document.addEventListener('DOMContentLoaded', function () {
+    const csrfToken = getMetaContent('csrf-token')
     const btnTambah = document.querySelector('.btnTambah')
     const modalForm = document.querySelector('.modalForm')
     const closeModalForm = document.querySelectorAll('.closeModalForm')
+    const jadwalId = document.querySelector('.jadwalId')
+    const judulJadwal = document.querySelector('.judulJadwal')
+    const judulJadwalError = document.querySelector('.judulJadwalError')
+    const judulJadwalErrorText = document.querySelector('.judulJadwalErrorText')
+    const tanggalStart = document.querySelector('.tanggalStart')
+    const tanggalStartError = document.querySelector('.tanggalStartError')
+    const tanggalStartErrorText = document.querySelector('.tanggalStartErrorText')
+    const tanggalUntil = document.querySelector('.tanggalUntil')
+    const tanggalUntilError = document.querySelector('.tanggalUntilError')
+    const tanggalUntilErrorText = document.querySelector('.tanggalUntilErrorText')
+    const lokasiJadwal = document.querySelector('.lokasiJadwal')
+    const lokasiJadwalError = document.querySelector('.lokasiJadwalError')
+    const lokasiJadwalErrorText = document.querySelector('.lokasiJadwalErrorText')
+    const detailJadwal = document.querySelector('.detailJadwal')
+    const detailJadwalError = document.querySelector('.detailJadwalError')
+    const detailJadwalErrorText = document.querySelector('.detailJadwalErrorText')
+    const notesJadwal = document.querySelector('.notesJadwal')
+    const notesJadwalError = document.querySelector('.notesJadwalError')
+    const notesJadwalErrorText = document.querySelector('.notesJadwalErrorText')
+    const prioritasJadwal = document.querySelector('.prioritasJadwal')
+    const prioritasJadwalError = document.querySelector('.prioritasJadwalError')
+    const prioritasJadwalErrorText = document.querySelector('.prioritasJadwalErrorText')
     const btnSimpan = document.querySelector('.btnSimpan')
     const btnHapus = document.querySelector('.btnHapus')
+
     const titleCalendar = document.querySelector('.titleCalendar')
     const btnToday = document.querySelector('.btnToday')
     const btnPrevMonth = document.querySelector('.btnPrevMonth')
@@ -66,6 +92,22 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         contentHeight: window.innerHeight - 340,
         nowIndicator: true,
+        eventDidMount: function (info) {
+            const {detail} = info.event.extendedProps
+            info.el.childNodes.forEach((elm) => {
+                elm.childNodes.forEach((elmChilds) => {
+                    if (typeof elmChilds.querySelector !== 'undefined') {
+                        const fcEventTitleContainer = elmChilds.querySelector('.fc-event-title-container')
+                        const fcEventTitle = elmChilds.querySelector('.fc-event-title')
+                        fcEventTitleContainer.classList.add('!grow-[0]')
+                        fcEventTitle.classList.add('truncate')
+                    }
+                })
+                $(elm.childNodes).append(`
+                    <div class="truncate">${detail}</div>
+                `)
+            })
+        },
         // now: '2023-07-27T22:00:00'
     })
     calendar.render()
@@ -132,28 +174,113 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     //endregion
 
+    const handleLoadAgenda = async () => {
+        const response = await fetch(`/trans/schedule/load-agenda`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+
+        const {status} = response
+        const {message, data} = await response.json()
+        if (status === 200) {
+            if (data.length !== 0) {
+                const dataEvents = []
+                data.map((item) => {
+                    const {id, judul, tanggal_start, tanggal_until, prioritas} = item
+                    dataEvents.push({
+                        id: id,
+                        title: judul,
+                        start: moment(tanggal_start).format('YYYY-MM-DDTHH:mm:ss'),
+                        end: moment(tanggal_until).format('YYYY-MM-DDTHH:mm:ss'),
+                        color: handlePriorityColor(prioritas),
+                        extendedProps: item,
+                    })
+                })
+
+                calendar.addEventSource(dataEvents)
+            }
+        }
+    }
+
+    handleLoadAgenda().then(null)
+
+    //region Handle Tambah
     if (btnTambah) {
         btnTambah.addEventListener('click', function () {
-            showModalDialog(modalForm, '<i class="fas fa-plus-circle mr-2"></i> Tambah Jadwal', () => {
+            showModalDialog(modalForm, '<i class="fas fa-plus-circle mr-2"></i> Tambah Agenda', () => {
 
+                btnSimpan.addEventListener('click', function () {
+                    confirmAlert({
+                        title: 'Konfirmasi',
+                        html: 'Apakah akan membuat Agenda baru?',
+                        confirmButtonText: 'Ya, Simpan',
+                        showDenyButton: true,
+                        denyButtonText: 'Tidak'
+                    }, async () => {
+                        hiddenElm(judulJadwalError)
+                        hiddenElm(tanggalStartError)
+                        hiddenElm(tanggalUntilError)
+                        hiddenElm(lokasiJadwalError)
+                        hiddenElm(detailJadwalError)
+                        hiddenElm(notesJadwalError)
+                        hiddenElm(prioritasJadwalError)
+
+                        await waitLoader('Mohon Tunggu...', 'Menyimpan data Agenda', async () => {
+                            const response = await fetch(`/trans/schedule/store`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken
+                                },
+                                body: JSON.stringify({
+                                    judul: judulJadwal.value,
+                                    tanggal_start: tanggalStart.value,
+                                    tanggal_until: tanggalUntil.value,
+                                    detail: detailJadwal.value,
+                                    lokasi: lokasiJadwal.value,
+                                    notes: notesJadwal.value,
+                                    prioritas: prioritasJadwal.value,
+                                })
+                            })
+
+                            const {status} = response
+                            const {message, errorValidation} = await response.json()
+                            if (status === 200) {
+                                successAlert({
+                                    title: 'Berhasil',
+                                    html: message,
+                                    confirmButtonText: 'Tutup'
+                                }, () => {
+                                    closeAlert()
+                                    calendar.addEvent({
+                                        title: judulJadwal.value,
+                                        start: moment(tanggalStart.value).format('YYYY-MM-DDTHH:mm:ss'),
+                                        end: moment(tanggalUntil.value).format('YYYY-MM-DDTHH:mm:ss'),
+                                        color: handlePriorityColor(prioritasJadwal.value),
+                                        extendedProps: {
+                                            detail: detailJadwal.value
+                                        }
+                                    })
+                                })
+                            } else {
+                                if (errorValidation) {
+                                    closeAlert()
+                                } else {
+                                    failureAlert({
+                                        html: message,
+                                        confirmButtonText: 'Tutup'
+                                    })
+                                }
+                            }
+                        })
+                    })
+                })
             })
-            /*calendar.addEventSource([{
-                title: 'Meeting dengan Client 1',
-                start: '2023-07-23T12:30:00',
-                end: '2023-07-23T13:30:00',
-                color: '#518105',
-                extendedProps: {
-                    description: 'Test 1'
-                },
-            },{
-                title: 'Zoom Meeting',
-                start: '2023-07-24T14:30:00',
-                end: '2023-07-24T15:30:00',
-                extendedProps: {
-                    description: 'Test 2'
-                },
-            }])*/
         })
     }
+    //endregion
 
 })

@@ -34,6 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('trans')->group(function () {
         Route::prefix('schedule')->group(function () {
             Route::get('/', [ControllerSchedule::class, 'index']);
+            Route::post('store', [ControllerSchedule::class, 'store']);
+            Route::get('load-agenda', [ControllerSchedule::class, 'loadAgenda']);
         });
     });
 
