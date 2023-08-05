@@ -1518,3 +1518,8 @@ table.fc-scrollgrid-sync-table tbody tr td {
 .fc .fc-timegrid-now-indicator-arrow .time-now {
     @apply absolute block mt-[-7px] rounded-full left-[9px] bg-primary text-white text-[12px] px-2 py-1
 }
+
+.fc-list-event-title ol {
+    list-style: decimal;
+    margin-left: 15px;
+}

@@ -14,7 +14,7 @@
         </div>
         <div class="modal-body overflow-y-auto !max-h-[600px]">
             <div class="form-group">
-                <label>Judul Agenda</label>
+                <label>Judul Agenda <span class="text-red-500 ml-1">*</span></label>
                 <label class="form-group-control">
                     <input type="hidden" class="jadwalId"/>
                     <input type="text" class="form-control judulJadwal" placeholder="..."/>
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Kategori</label>
+                <label>Kategori <span class="text-red-500 ml-1">*</span></label>
                 <label class="form-group-control">
                     <select class="form-control select2-custom kategoriJadwal">
                         <option value="">...</option>
@@ -42,7 +42,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-1">
                     <div class="form-group">
-                        <label>Tanggal Mulai</label>
+                        <label>Tanggal Mulai <span class="text-red-500 ml-1">*</span></label>
                         <label class="form-group-control">
                             <input type="text" class="form-control tanggalStart datetimepickerStart" placeholder="..."/>
                         </label>
@@ -54,7 +54,7 @@
                 </div>
                 <div class="col-span-1">
                     <div class="form-group">
-                        <label>Tanggal Selesai</label>
+                        <label>Tanggal Selesai <span class="text-red-500 ml-1">*</span></label>
                         <label class="form-group-control">
                             <input type="text" class="form-control tanggalUntil datetimepickerUntil" placeholder="..."/>
                         </label>
@@ -66,7 +66,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Detail Agenda</label>
+                <label>Detail Agenda <span class="text-red-500 ml-1">*</span></label>
                 <label class="form-group-control">
                     <textarea class="form-control detailJadwal" rows="3" placeholder="..."></textarea>
                 </label>
@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Lokasi / Venue</label>
+                <label>Lokasi / Venue <span class="text-red-500 ml-1">*</span></label>
                 <label class="form-group-control">
                     <input type="text" class="form-control lokasiJadwal" placeholder="..."/>
                 </label>

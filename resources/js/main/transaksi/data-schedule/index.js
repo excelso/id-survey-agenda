@@ -9,6 +9,10 @@ import {closeModalDialog, showModalDialog} from "@/js/plugins/modal";
 import {closeAlert, confirmAlert, failureAlert, successAlert, waitLoader} from "@/js/plugins/sweet-alert"
 import {getMetaContent, handlePriorityColor, hiddenElm, showHiddenElmAndText} from "@/js/plugins/functions"
 import {setTriggerSelected} from "@/js/plugins/select2-custom";
+import EasyMDE from "easymde/dist/easymde.min";
+import "easymde/dist/easymde.min.css"
+import {marked} from 'marked';
+import DOMPurify from 'isomorphic-dompurify';
 
 moment.updateLocale('id', localization)
 
@@ -55,6 +59,14 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         })
     }
+
+    const detailJadwalMDE = new EasyMDE({
+        element: detailJadwal,
+        hideIcons: ['guide', 'heading', 'image', 'horizontal-rule', 'unordered-list', 'side-by-side', 'fullscreen'],
+        spellChecker: false,
+        status: false,
+        maxHeight: '120px'
+    })
 
     //region Handle Calendar
     const calendar = new Calendar(calendarEl, {
@@ -110,85 +122,92 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 })
 
-                let detailInfo = `<div class="truncate mb-2 text-[14px]">${detail}</div>`
-                let kategoriInfo = `<div class="truncate mb-2 text-[14px]" style="color: ${color}">${nama_kategori}</div>`
-                let lokasiInfo = ``
-                let sambuatanInfo = ``
-                let protokolerInfo = ``
-                let notesInfo = ``
-                let userCreateInfo = ``
-                if (info.view.type === 'listWeek') {
-                    lokasiInfo = `
-                        <div class="truncate mb-2 text-[14px]">
+            })
+
+            const fcListEventTitle = info.el.querySelectorAll('.fc-list-event-title')
+
+            let detailInfo = `
+                <div class="mb-2 text-[14px]">
+                    ${DOMPurify.sanitize(marked(detail, {mangle: false, headerIds: false}))}
+                </div>
+            `
+            let kategoriInfo = `<div class="mb-2 text-[12px] w-fit px-2 py-[1px] rounded-full" style="color: ${color}; border: 1px ${color} solid">${nama_kategori}</div>`
+            let lokasiInfo = ``
+            let sambuatanInfo = ``
+            let protokolerInfo = ``
+            let notesInfo = ``
+            let userCreateInfo = ``
+            if (info.view.type === 'listWeek') {
+                lokasiInfo = `
+                    <div class="truncate mb-2 text-[14px]">
+                        <div>
+                            <div class="font-bold">Lokasi / Venue</div>
                             <div>
-                                <div class="font-bold">Lokasi / Venue</div>
-                                <div>
-                                    <i class="fa fa-location-dot mr-1"></i> ${lokasi}
-                                </div>
+                                <i class="fa fa-location-dot mr-1"></i> ${lokasi}
                             </div>
                         </div>
-                    `
+                    </div>
+                `
 
-                    if (sambutan !== null && sambutan !== '') {
-                        sambuatanInfo = `
-                            <div class="truncate mb-2 text-[14px]">
+                if (sambutan !== null && sambutan !== '') {
+                    sambuatanInfo = `
+                        <div class="truncate mb-2 text-[14px]">
+                            <div>
+                                <div class="font-bold">Sambutan</div>
                                 <div>
-                                    <div class="font-bold">Sambutan</div>
-                                    <div>
-                                        <i class="far fa-note-sticky mr-1"></i> ${sambutan}
-                                    </div>
+                                    <i class="far fa-note-sticky mr-1"></i> ${sambutan}
                                 </div>
                             </div>
-                        `
-                    }
-
-                    if (protokoler !== null && protokoler !== '') {
-                        protokolerInfo = `
-                            <div class="truncate mb-2 text-[14px]">
-                                <div>
-                                    <div class="font-bold">Protokoler</div>
-                                    <div>
-                                        <i class="far fa-user mr-1"></i> ${protokoler}
-                                    </div>
-                                </div>
-                            </div>
-                        `
-                    }
-
-                    if (notes !== null && notes !== '') {
-                        notesInfo = `
-                            <div class="truncate mb-2 text-[14px]">
-                                <div>
-                                    <div class="font-bold">Notes</div>
-                                    <div>
-                                        <i class="far fa-note-sticky mr-1"></i> ${notes}
-                                    </div>
-                                </div>
-                            </div>
-                        `
-                    }
-
-                    userCreateInfo = `
-                        <div class="truncate mt-5 text-[12px] italic">
-                            ${name}
                         </div>
                     `
                 }
 
-                $(elm.childNodes).append(`
-                    ${kategoriInfo}
-                    ${detailInfo}
-                    ${lokasiInfo}
-                    ${sambuatanInfo}
-                    ${protokolerInfo}
-                    ${notesInfo}
-                    ${userCreateInfo}
-                `)
-            })
+                if (protokoler !== null && protokoler !== '') {
+                    protokolerInfo = `
+                        <div class="truncate mb-2 text-[14px]">
+                            <div>
+                                <div class="font-bold">Protokoler</div>
+                                <div>
+                                    <i class="far fa-user mr-1"></i> ${protokoler}
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+
+                if (notes !== null && notes !== '') {
+                    notesInfo = `
+                        <div class="truncate mb-2 text-[14px]">
+                            <div>
+                                <div class="font-bold">Notes</div>
+                                <div>
+                                    <i class="far fa-note-sticky mr-1"></i> ${notes}
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+
+                userCreateInfo = `
+                    <div class="truncate mt-5 text-[12px] italic">
+                        ${name}
+                    </div>
+                `
+            }
+
+            $(fcListEventTitle).append(`
+                ${kategoriInfo}
+                ${detailInfo}
+                ${lokasiInfo}
+                ${sambuatanInfo}
+                ${protokolerInfo}
+                ${notesInfo}
+                ${userCreateInfo}
+            `)
 
             const fcListEventGraphic = info.el.querySelectorAll('.fc-list-event-graphic')
             fcListEventGraphic.forEach((elm) => {
-                elm.classList.add('!pt-[15px]')
+                elm.classList.add('!pt-[8px]')
             })
         },
         // now: '2023-07-27T22:00:00'
@@ -328,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     kategori_id: kategoriJadwal.value,
                                     tanggal_start: tanggalStart.value,
                                     tanggal_until: tanggalUntil.value,
-                                    detail: detailJadwal.value,
+                                    detail: detailJadwalMDE.value(),
                                     lokasi: lokasiJadwal.value,
                                     notes: notesJadwal.value,
                                     sambutan: sambutanJadwal.value,
@@ -358,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                                 kategori_id: kategoriJadwal.value,
                                                 tanggal_start: tanggalStart.value,
                                                 tanggal_until: tanggalUntil.value,
-                                                detail: detailJadwal.value,
+                                                detail: detailJadwalMDE.value(),
                                                 lokasi: lokasiJadwal.value,
                                                 notes: notesJadwal.value,
                                                 sambutan: sambutanJadwal.value,
@@ -410,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tanggalStart.value = tanggal_start
             tanggalUntil.value = tanggal_until
             lokasiJadwal.value = lokasi
-            detailJadwal.value = detail
+            detailJadwalMDE.value(detail)
             notesJadwal.value = notes
             sambutanJadwal.value = sambutan
             protokolerJadwal.value = protokoler
@@ -487,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 kategori_id: kategoriJadwal.value,
                                 tanggal_start: tanggalStart.value,
                                 tanggal_until: tanggalUntil.value,
-                                detail: detailJadwal.value,
+                                detail: detailJadwalMDE.value(),
                                 lokasi: lokasiJadwal.value,
                                 notes: notesJadwal.value,
                                 sambutan: sambutanJadwal.value,
@@ -519,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                             judul: judulJadwal.value,
                                             tanggal_start: tanggalStart.value,
                                             tanggal_until: tanggalUntil.value,
-                                            detail: detailJadwal.value,
+                                            detail: detailJadwalMDE.value(),
                                             lokasi: lokasiJadwal.value,
                                             notes: notesJadwal.value,
                                             sambutan: sambutanJadwal.value,

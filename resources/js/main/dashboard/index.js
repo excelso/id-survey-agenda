@@ -7,6 +7,8 @@ import moment from "moment";
 import localization from 'moment/dist/locale/id'
 import {getMetaContent, handlePriorityColor} from "@/js/plugins/functions";
 import {failureAlert} from "@/js/plugins/sweet-alert";
+import DOMPurify from "isomorphic-dompurify";
+import {marked} from "marked";
 moment.updateLocale('id', localization)
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -70,82 +72,88 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 })
+            })
 
-                let detailInfo = `<div class="truncate mb-2 text-[14px]">${detail}</div>`
-                let kategoriInfo = `<div class="truncate mb-2 text-[14px]" style="color: ${color}">${nama_kategori}</div>`
-                let lokasiInfo = ``
-                let sambuatanInfo = ``
-                let protokolerInfo = ``
-                let notesInfo = ``
-                let userCreateInfo = ``
-                if (info.view.type === 'listWeek') {
-                    lokasiInfo = `
-                        <div class="truncate mb-2 text-[14px]">
+            const fcListEventTitle = info.el.querySelectorAll('.fc-list-event-title')
+
+            let detailInfo = `
+                <div class="mb-2 text-[14px]">
+                    ${DOMPurify.sanitize(marked(detail, {mangle: false, headerIds: false}))}
+                </div>
+            `
+            let kategoriInfo = `<div class="mb-2 text-[12px] w-fit px-2 py-[1px] rounded-full" style="color: ${color}; border: 1px ${color} solid">${nama_kategori}</div>`
+            let lokasiInfo = ``
+            let sambuatanInfo = ``
+            let protokolerInfo = ``
+            let notesInfo = ``
+            let userCreateInfo = ``
+            if (info.view.type === 'listWeek') {
+                lokasiInfo = `
+                    <div class="truncate mb-2 text-[14px]">
+                        <div>
+                            <div class="font-bold">Lokasi / Venue</div>
                             <div>
-                                <div class="font-bold">Lokasi / Venue</div>
-                                <div>
-                                    <i class="fa fa-location-dot mr-1"></i> ${lokasi}
-                                </div>
+                                <i class="fa fa-location-dot mr-1"></i> ${lokasi}
                             </div>
                         </div>
-                    `
+                    </div>
+                `
 
-                    if (sambutan !== null && sambutan !== '') {
-                        sambuatanInfo = `
-                            <div class="truncate mb-2 text-[14px]">
+                if (sambutan !== null && sambutan !== '') {
+                    sambuatanInfo = `
+                        <div class="truncate mb-2 text-[14px]">
+                            <div>
+                                <div class="font-bold">Sambutan</div>
                                 <div>
-                                    <div class="font-bold">Sambutan</div>
-                                    <div>
-                                        <i class="far fa-note-sticky mr-1"></i> ${sambutan}
-                                    </div>
+                                    <i class="far fa-note-sticky mr-1"></i> ${sambutan}
                                 </div>
                             </div>
-                        `
-                    }
-
-                    if (protokoler !== null && protokoler !== '') {
-                        protokolerInfo = `
-                            <div class="truncate mb-2 text-[14px]">
-                                <div>
-                                    <div class="font-bold">Protokoler</div>
-                                    <div>
-                                        <i class="far fa-user mr-1"></i> ${protokoler}
-                                    </div>
-                                </div>
-                            </div>
-                        `
-                    }
-
-                    if (notes !== null && notes !== '') {
-                        notesInfo = `
-                            <div class="truncate mb-2 text-[14px]">
-                                <div>
-                                    <div class="font-bold">Notes</div>
-                                    <div>
-                                        <i class="far fa-note-sticky mr-1"></i> ${notes}
-                                    </div>
-                                </div>
-                            </div>
-                        `
-                    }
-
-                    userCreateInfo = `
-                        <div class="truncate mt-5 text-[12px] italic">
-                            ${name}
                         </div>
                     `
                 }
 
-                $(elm.childNodes).append(`
-                    ${kategoriInfo}
-                    ${detailInfo}
-                    ${lokasiInfo}
-                    ${sambuatanInfo}
-                    ${protokolerInfo}
-                    ${notesInfo}
-                    ${userCreateInfo}
-                `)
-            })
+                if (protokoler !== null && protokoler !== '') {
+                    protokolerInfo = `
+                        <div class="truncate mb-2 text-[14px]">
+                            <div>
+                                <div class="font-bold">Protokoler</div>
+                                <div>
+                                    <i class="far fa-user mr-1"></i> ${protokoler}
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+
+                if (notes !== null && notes !== '') {
+                    notesInfo = `
+                        <div class="truncate mb-2 text-[14px]">
+                            <div>
+                                <div class="font-bold">Notes</div>
+                                <div>
+                                    <i class="far fa-note-sticky mr-1"></i> ${notes}
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+
+                userCreateInfo = `
+                    <div class="truncate mt-5 text-[12px] italic">
+                        ${name}
+                    </div>
+                `
+            }
+
+            $(fcListEventTitle).append(`
+                ${kategoriInfo}
+                ${detailInfo}
+                ${lokasiInfo}
+                ${sambuatanInfo}
+                ${protokolerInfo}
+                ${notesInfo}
+                ${userCreateInfo}
+            `)
 
             const fcListEventGraphic = info.el.querySelectorAll('.fc-list-event-graphic')
             fcListEventGraphic.forEach((elm) => {
