@@ -3,6 +3,7 @@
     namespace App\Models\Transaksi;
 
     use App\Models\Master\Karyawan\User;
+    use App\Models\Master\KategoriAgenda;
     use Illuminate\Database\Eloquent\Builder;
     use Illuminate\Database\Eloquent\Factories\HasFactory;
     use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,10 @@
 
         public function user(): BelongsTo {
             return $this->belongsTo(User::class, 'user_id', 'id');
+        }
+
+        public function kategori(): BelongsTo {
+            return $this->belongsTo(KategoriAgenda::class, 'kategori_id', 'id');
         }
 
         public function scopeDataAgenda(Builder $builder): void {

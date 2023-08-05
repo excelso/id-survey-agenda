@@ -5,6 +5,7 @@
     use App\Http\Controllers\Controller;
     use App\Models\Master\Karyawan\User;
     use App\Models\Master\Karyawan\UserRole;
+    use App\Models\Master\KategoriAgenda;
     use App\Models\Transaksi\Agenda;
     use Carbon\Carbon;
     use Exception;
@@ -29,15 +30,17 @@
             // }
 
             $data = Agenda::dataAgenda();
+            $dataKategori = KategoriAgenda::get();
             return view($this->viewPath . '/index', [
                 'items' => $data->paginate(20),
+                'dataKategori' => $dataKategori,
             ]);
         }
 
         public function loadAgenda(Request $request): JsonResponse {
             try {
 
-                $data = Agenda::with('user')->dataAgenda();
+                $data = Agenda::with('user', 'kategori')->dataAgenda();
                 return response()->json([
                     'message' => 'Load Success!',
                     'data' => $data->get(),
@@ -58,18 +61,18 @@
 
                 $validate = Validator::make($request->all(), [
                     'judul' => 'required',
+                    'kategori_id' => 'required',
                     'tanggal_start' => 'required',
                     'tanggal_until' => 'required',
                     'detail' => 'required',
                     'lokasi' => 'required',
-                    'prioritas' => 'required',
                 ], [
                     'judul.required' => 'Judul tidak boleh kosong!',
+                    'kategori_id.required' => 'Kategori tidak boleh kosong!',
                     'tanggal_start.required' => 'Tanggal Mulai tidak boleh kosong!',
                     'tanggal_until.required' => 'Tanggal Selesai boleh kosong!',
                     'detail.required' => 'Detail Jadwal tidak boleh kosong!',
                     'lokasi.required' => 'Lokasi tidak boleh kosong!',
-                    'prioritas.required' => 'Lokasi NDVI tidak boleh kosong!',
                 ]);
 
                 if ($validate->fails()) {
@@ -82,6 +85,7 @@
                 $agenda = Agenda::create([
                     'user_id' => Auth::user()->id,
                     'judul' => $request->input('judul'),
+                    'kategori_id' => $request->input('kategori_id'),
                     'tanggal_start' => $request->input('tanggal_start'),
                     'tanggal_until' => $request->input('tanggal_until'),
                     'detail' => $request->input('detail'),
@@ -93,12 +97,14 @@
                 ]);
 
                 $data_user = (new User)->find(Auth::user()->id);
+                $data_kategori = KategoriAgenda::find($request->kategori_id);
 
                 DB::commit();
                 return response()->json([
                     'message' => 'Agenda baru Berhasil disimpan!',
                     'jadwal_id' => $agenda->id,
                     'user' => $data_user,
+                    'data_kategori' => $data_kategori,
                     'responseTime' => Carbon::now()
                 ], 200, [], JSON_PRETTY_PRINT);
 
@@ -117,18 +123,18 @@
 
                 $validate = Validator::make($request->all(), [
                     'judul' => 'required',
+                    'kategori_id' => 'required',
                     'tanggal_start' => 'required',
                     'tanggal_until' => 'required',
                     'detail' => 'required',
                     'lokasi' => 'required',
-                    'prioritas' => 'required',
                 ], [
                     'judul.required' => 'Judul tidak boleh kosong!',
+                    'kategori_id.required' => 'Kategori tidak boleh kosong!',
                     'tanggal_start.required' => 'Tanggal Mulai tidak boleh kosong!',
                     'tanggal_until.required' => 'Tanggal Selesai boleh kosong!',
                     'detail.required' => 'Detail Jadwal tidak boleh kosong!',
                     'lokasi.required' => 'Lokasi tidak boleh kosong!',
-                    'prioritas.required' => 'Lokasi NDVI tidak boleh kosong!',
                 ]);
 
                 if ($validate->fails()) {
@@ -141,6 +147,7 @@
                 $agenda_id = $request->input('id');
                 $agenda = Agenda::find($agenda_id);
                 $agenda->judul = $request->input('judul');
+                $agenda->kategori_id = $request->input('kategori_id');
                 $agenda->tanggal_start = $request->input('tanggal_start');
                 $agenda->tanggal_until = $request->input('tanggal_until');
                 $agenda->detail = $request->input('detail');
@@ -152,12 +159,35 @@
                 $agenda->save();
 
                 $data_user = (new User)->find($agenda->user_id);
+                $data_kategori = KategoriAgenda::find($request->kategori_id);
 
                 DB::commit();
                 return response()->json([
                     'message' => 'Perubahan Agenda Berhasil disimpan!',
                     'data' => $agenda,
                     'user' => $data_user,
+                    'data_kategori' => $data_kategori,
+                    'responseTime' => Carbon::now()
+                ], 200, [], JSON_PRETTY_PRINT);
+
+            } catch (Exception $exception) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                    'responseTime' => Carbon::now()
+                ], 500);
+            }
+        }
+
+        public function delete(Request $request): JsonResponse {
+            DB::beginTransaction();
+            try {
+
+                Agenda::where('id', $request->input('id'))->delete();
+
+                DB::commit();
+                return response()->json([
+                    'message' => 'Agenda Berhasil dihapus!',
                     'responseTime' => Carbon::now()
                 ], 200, [], JSON_PRETTY_PRINT);
 

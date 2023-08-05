@@ -7,7 +7,7 @@ import moment from "moment";
 import localization from 'moment/dist/locale/id'
 import {closeModalDialog, showModalDialog} from "@/js/plugins/modal";
 import {closeAlert, confirmAlert, failureAlert, successAlert, waitLoader} from "@/js/plugins/sweet-alert"
-import {getMetaContent, handlePriorityColor, hiddenElm} from "@/js/plugins/functions"
+import {getMetaContent, handlePriorityColor, hiddenElm, showHiddenElmAndText} from "@/js/plugins/functions"
 import {setTriggerSelected} from "@/js/plugins/select2-custom";
 
 moment.updateLocale('id', localization)
@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const judulJadwal = document.querySelector('.judulJadwal')
     const judulJadwalError = document.querySelector('.judulJadwalError')
     const judulJadwalErrorText = document.querySelector('.judulJadwalErrorText')
+    const kategoriJadwal = document.querySelector('.kategoriJadwal')
+    const kategoriJadwalError = document.querySelector('.kategoriJadwalError')
+    const kategoriJadwalErrorText = document.querySelector('.kategoriJadwalErrorText')
     const tanggalStart = document.querySelector('.tanggalStart')
     const tanggalStartError = document.querySelector('.tanggalStartError')
     const tanggalStartErrorText = document.querySelector('.tanggalStartErrorText')
@@ -36,9 +39,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const notesJadwal = document.querySelector('.notesJadwal')
     const sambutanJadwal = document.querySelector('.sambutanJadwal')
     const protokolerJadwal = document.querySelector('.protokolerJadwal')
-    const prioritasJadwal = document.querySelector('.prioritasJadwal')
-    const prioritasJadwalError = document.querySelector('.prioritasJadwalError')
-    const prioritasJadwalErrorText = document.querySelector('.prioritasJadwalErrorText')
     const btnSimpan = document.querySelector('.btnSimpan')
     const btnHapus = document.querySelector('.btnHapus')
 
@@ -93,8 +93,9 @@ document.addEventListener('DOMContentLoaded', function () {
         contentHeight: window.innerHeight - 340,
         nowIndicator: true,
         eventDidMount: function (info) {
-            const {detail, lokasi, notes, sambutan, protokoler, user} = info.event.extendedProps
+            const {detail, lokasi, notes, sambutan, protokoler, user, kategori} = info.event.extendedProps
             const {name} = user
+            const {nama_kategori, color} = kategori
             info.el.childNodes.forEach((elm) => {
                 elm.childNodes.forEach((elmChilds) => {
                     if (typeof elmChilds.querySelector !== 'undefined') {
@@ -110,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
 
                 let detailInfo = `<div class="truncate mb-2 text-[14px]">${detail}</div>`
+                let kategoriInfo = `<div class="truncate mb-2 text-[14px]" style="color: ${color}">${nama_kategori}</div>`
                 let lokasiInfo = ``
                 let sambuatanInfo = ``
                 let protokolerInfo = ``
@@ -168,12 +170,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     userCreateInfo = `
                         <div class="truncate mt-5 text-[12px] italic">
-                            by ${name}
+                            ${name}
                         </div>
                     `
                 }
 
                 $(elm.childNodes).append(`
+                    ${kategoriInfo}
                     ${detailInfo}
                     ${lokasiInfo}
                     ${sambuatanInfo}
@@ -269,19 +272,25 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.length !== 0) {
                 const dataEvents = []
                 data.map((item) => {
-                    const {id, judul, tanggal_start, tanggal_until, prioritas} = item
+                    const {id, judul, tanggal_start, tanggal_until, prioritas, kategori} = item
+                    const {color} = kategori
                     dataEvents.push({
                         id: id,
                         title: judul,
                         start: moment(tanggal_start).format('YYYY-MM-DDTHH:mm:ss'),
                         end: moment(tanggal_until).format('YYYY-MM-DDTHH:mm:ss'),
-                        color: handlePriorityColor(prioritas),
+                        color: color,
                         extendedProps: item,
                     })
                 })
 
                 calendar.addEventSource(dataEvents)
             }
+        } else {
+            failureAlert({
+                html: message,
+                confirmButtonText: 'Tutup'
+            })
         }
     }
 
@@ -301,11 +310,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         denyButtonText: 'Tidak'
                     }, async () => {
                         hiddenElm(judulJadwalError)
+                        hiddenElm(kategoriJadwalError)
                         hiddenElm(tanggalStartError)
                         hiddenElm(tanggalUntilError)
                         hiddenElm(lokasiJadwalError)
                         hiddenElm(detailJadwalError)
-                        hiddenElm(prioritasJadwalError)
 
                         await waitLoader('Mohon Tunggu...', 'Menyimpan data Agenda', async () => {
                             const response = await fetch(`/trans/schedule/store`, {
@@ -316,6 +325,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 },
                                 body: JSON.stringify({
                                     judul: judulJadwal.value,
+                                    kategori_id: kategoriJadwal.value,
                                     tanggal_start: tanggalStart.value,
                                     tanggal_until: tanggalUntil.value,
                                     detail: detailJadwal.value,
@@ -323,12 +333,11 @@ document.addEventListener('DOMContentLoaded', function () {
                                     notes: notesJadwal.value,
                                     sambutan: sambutanJadwal.value,
                                     protokoler: protokolerJadwal.value,
-                                    prioritas: prioritasJadwal.value,
                                 })
                             })
 
                             const {status} = response
-                            const {message, jadwal_id, user, errorValidation} = await response.json()
+                            const {message, jadwal_id, user, data_kategori, errorValidation} = await response.json()
                             if (status === 200) {
                                 successAlert({
                                     title: 'Berhasil',
@@ -336,22 +345,26 @@ document.addEventListener('DOMContentLoaded', function () {
                                     confirmButtonText: 'Tutup'
                                 }, () => {
                                     closeModalDialog(modalForm, () => {
+                                        const {color} = data_kategori
                                         calendar.addEvent({
                                             id: jadwal_id,
                                             title: judulJadwal.value,
                                             start: moment(tanggalStart.value).format('YYYY-MM-DDTHH:mm:ss'),
                                             end: moment(tanggalUntil.value).format('YYYY-MM-DDTHH:mm:ss'),
-                                            color: handlePriorityColor(prioritasJadwal.value),
+                                            color: color,
                                             extendedProps: {
                                                 id: jadwal_id,
                                                 judul: judulJadwal.value,
+                                                kategori_id: kategoriJadwal.value,
                                                 tanggal_start: tanggalStart.value,
                                                 tanggal_until: tanggalUntil.value,
                                                 detail: detailJadwal.value,
                                                 lokasi: lokasiJadwal.value,
                                                 notes: notesJadwal.value,
-                                                prioritas: prioritasJadwal.value,
-                                                user: user
+                                                sambutan: sambutanJadwal.value,
+                                                protokoler: protokolerJadwal.value,
+                                                user: user,
+                                                kategori: data_kategori
                                             }
                                         })
                                     })
@@ -375,11 +388,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     //endregion
 
+    //region Handle Update
     function handleUpdate(info) {
         showModalDialog(modalForm, '<i class="fas fa-edit mr-2"></i> Edit Agenda', () => {
             const {
                 id,
                 judul,
+                kategori_id,
                 tanggal_start,
                 tanggal_until,
                 lokasi,
@@ -387,11 +402,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 notes,
                 sambutan,
                 protokoler,
-                prioritas
             } = info.event.extendedProps
 
             jadwalId.value = id
             judulJadwal.value = judul
+            setTriggerSelected(kategoriJadwal, kategori_id)
             tanggalStart.value = tanggal_start
             tanggalUntil.value = tanggal_until
             lokasiJadwal.value = lokasi
@@ -399,7 +414,50 @@ document.addEventListener('DOMContentLoaded', function () {
             notesJadwal.value = notes
             sambutanJadwal.value = sambutan
             protokolerJadwal.value = protokoler
-            setTriggerSelected(prioritasJadwal, prioritas)
+
+            showHiddenElmAndText(btnHapus)
+            btnHapus.addEventListener('click', function () {
+                confirmAlert({
+                    title: 'Konfirmasi',
+                    html: 'Apakah akan menghapus Agenda ini?',
+                    confirmButtonText: 'Ya, Hapus',
+                    showDenyButton: true,
+                    denyButtonText: 'Tidak'
+                }, async () => {
+                    await waitLoader('Mohon Tunggu...', 'Menyimpan data Agenda', async () => {
+                        const response = await fetch(`/trans/schedule/delete`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({
+                                id: jadwalId.value
+                            })
+                        })
+
+                        const {status} = response
+                        const {message} = await response.json()
+                        if (status === 200) {
+                            successAlert({
+                                title: 'Berhasil',
+                                html: message,
+                                confirmButtonText: 'Tutup'
+                            }, () => {
+                                closeModalDialog(modalForm, () => {
+                                    const event = calendar.getEventById(jadwalId.value)
+                                    event.remove()
+                                })
+                            })
+                        } else {
+                            failureAlert({
+                                html: message,
+                                confirmButtonText: 'Tutup'
+                            })
+                        }
+                    })
+                })
+            })
 
             btnSimpan.addEventListener('click', function () {
                 confirmAlert({
@@ -410,11 +468,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     denyButtonText: 'Tidak'
                 }, async () => {
                     hiddenElm(judulJadwalError)
+                    hiddenElm(kategoriJadwalError)
                     hiddenElm(tanggalStartError)
                     hiddenElm(tanggalUntilError)
                     hiddenElm(lokasiJadwalError)
                     hiddenElm(detailJadwalError)
-                    hiddenElm(prioritasJadwalError)
 
                     await waitLoader('Mohon Tunggu...', 'Menyimpan data Agenda', async () => {
                         const response = await fetch(`/trans/schedule/update`, {
@@ -426,6 +484,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             body: JSON.stringify({
                                 id: jadwalId.value,
                                 judul: judulJadwal.value,
+                                kategori_id: kategoriJadwal.value,
                                 tanggal_start: tanggalStart.value,
                                 tanggal_until: tanggalUntil.value,
                                 detail: detailJadwal.value,
@@ -433,12 +492,11 @@ document.addEventListener('DOMContentLoaded', function () {
                                 notes: notesJadwal.value,
                                 sambutan: sambutanJadwal.value,
                                 protokoler: protokolerJadwal.value,
-                                prioritas: prioritasJadwal.value,
                             })
                         })
 
                         const {status} = response
-                        const {message, data, user, errorValidation} = await response.json()
+                        const {message, data, user, data_kategori, errorValidation} = await response.json()
                         if (status === 200) {
                             successAlert({
                                 title: 'Berhasil',
@@ -446,6 +504,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 confirmButtonText: 'Tutup'
                             }, () => {
                                 closeModalDialog(modalForm, () => {
+                                    const {color} = data_kategori
                                     const event = calendar.getEventById(jadwalId.value)
                                     event.remove()
 
@@ -454,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                         title: judulJadwal.value,
                                         start: moment(tanggalStart.value).format('YYYY-MM-DDTHH:mm:ss'),
                                         end: moment(tanggalUntil.value).format('YYYY-MM-DDTHH:mm:ss'),
-                                        color: handlePriorityColor(prioritasJadwal.value),
+                                        color: color,
                                         extendedProps: {
                                             id: jadwalId.value,
                                             judul: judulJadwal.value,
@@ -465,8 +524,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                             notes: notesJadwal.value,
                                             sambutan: sambutanJadwal.value,
                                             protokoler: protokolerJadwal.value,
-                                            prioritas: prioritasJadwal.value,
-                                            user: user
+                                            user: user,
+                                            kategori: data_kategori,
                                         }
                                     })
                                 })
@@ -486,5 +545,6 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         })
     }
+    //endregion
 
 })

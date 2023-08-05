@@ -6,6 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import moment from "moment";
 import localization from 'moment/dist/locale/id'
 import {getMetaContent, handlePriorityColor} from "@/js/plugins/functions";
+import {failureAlert} from "@/js/plugins/sweet-alert";
 moment.updateLocale('id', localization)
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -53,8 +54,9 @@ document.addEventListener('DOMContentLoaded', function () {
         contentHeight: window.innerHeight - 340,
         nowIndicator: true,
         eventDidMount: function (info) {
-            const {detail, lokasi, notes, sambutan, protokoler, user} = info.event.extendedProps
+            const {detail, lokasi, notes, sambutan, protokoler, user, kategori} = info.event.extendedProps
             const {name} = user
+            const {nama_kategori, color} = kategori
             info.el.childNodes.forEach((elm) => {
                 elm.childNodes.forEach((elmChilds) => {
                     if (typeof elmChilds.querySelector !== 'undefined') {
@@ -70,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
 
                 let detailInfo = `<div class="truncate mb-2 text-[14px]">${detail}</div>`
+                let kategoriInfo = `<div class="truncate mb-2 text-[14px]" style="color: ${color}">${nama_kategori}</div>`
                 let lokasiInfo = ``
                 let sambuatanInfo = ``
                 let protokolerInfo = ``
@@ -128,12 +131,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     userCreateInfo = `
                         <div class="truncate mt-5 text-[12px] italic">
-                            by ${name}
+                            ${name}
                         </div>
                     `
                 }
 
                 $(elm.childNodes).append(`
+                    ${kategoriInfo}
                     ${detailInfo}
                     ${lokasiInfo}
                     ${sambuatanInfo}
@@ -229,19 +233,25 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.length !== 0) {
                 const dataEvents = []
                 data.map((item) => {
-                    const {id, judul, tanggal_start, tanggal_until, prioritas} = item
+                    const {id, judul, tanggal_start, tanggal_until, kategori} = item
+                    const {color} = kategori
                     dataEvents.push({
                         id: id,
                         title: judul,
                         start: moment(tanggal_start).format('YYYY-MM-DDTHH:mm:ss'),
                         end: moment(tanggal_until).format('YYYY-MM-DDTHH:mm:ss'),
-                        color: handlePriorityColor(prioritas),
+                        color: color,
                         extendedProps: item,
                     })
                 })
 
                 calendar.addEventSource(dataEvents)
             }
+        } else {
+            failureAlert({
+                html: message,
+                confirmButtonText: 'Tutup'
+            })
         }
     }
 

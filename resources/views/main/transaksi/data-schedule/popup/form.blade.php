@@ -14,7 +14,7 @@
         </div>
         <div class="modal-body overflow-y-auto !max-h-[600px]">
             <div class="form-group">
-                <label>Judul</label>
+                <label>Judul Agenda</label>
                 <label class="form-group-control">
                     <input type="hidden" class="jadwalId"/>
                     <input type="text" class="form-control judulJadwal" placeholder="..."/>
@@ -22,6 +22,21 @@
                 <div class="info-alert-text error judulJadwalError hidden">
                     <i class="fas fa-exclamation-circle"></i>
                     <div class="judulJadwalErrorText"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Kategori</label>
+                <label class="form-group-control">
+                    <select class="form-control select2-custom kategoriJadwal">
+                        <option value="">...</option>
+                        @foreach($dataKategori as $item)
+                            <option value="{{ $item->id }}">{{ $item->nama_kategori }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <div class="info-alert-text error kategoriJadwalError hidden">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="kategoriJadwalErrorText"></div>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
@@ -51,7 +66,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Detail Jadwal</label>
+                <label>Detail Agenda</label>
                 <label class="form-group-control">
                     <textarea class="form-control detailJadwal" rows="3" placeholder="..."></textarea>
                 </label>
@@ -98,21 +113,6 @@
                 <div class="info-alert-text error protokolerJadwalError hidden">
                     <i class="fas fa-exclamation-circle"></i>
                     <div class="protokolerJadwalErrorText"></div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Prioritas</label>
-                <label class="form-group-control">
-                    <select class="form-control select2-custom prioritasJadwal">
-                        <option value="">...</option>
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                    </select>
-                </label>
-                <div class="info-alert-text error prioritasJadwalError hidden">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div class="prioritasJadwalErrorText"></div>
                 </div>
             </div>
         </div>
